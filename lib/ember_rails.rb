@@ -17,7 +17,6 @@ module Ember
 
         ::Rails::Generators.configure!(app.config.generators)
         ::Rails::Generators.hidden_namespaces.uniq!
-        require "generators/ember/resource_override"
       end
 
       initializer "ember_rails.setup_vendor", :after => "ember_rails.setup", :group => :all do |app|
@@ -25,7 +24,7 @@ module Ember
           # test environments should default to development
           variant ||= :development
           # Copy over the desired ember, ember-data, and handlebars bundled in
-          # ember-source, ember-data-source, and handlebars-source to a tmp folder. 
+          # ember-source, ember-data-source, and handlebars-source to a tmp folder.
           tmp_path = app.root.join("tmp/ember-rails")
           ext = variant == :production ? ".prod.js" : ".js"
           FileUtils.mkdir_p(tmp_path)
