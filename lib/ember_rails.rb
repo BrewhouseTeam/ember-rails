@@ -17,7 +17,6 @@ module Ember
 
         ::Rails::Generators.configure!(app.config.generators)
         ::Rails::Generators.hidden_namespaces.uniq!
-        require "generators/ember/resource_override"
       end
 
       initializer "ember_rails.setup_vendor", :after => "ember_rails.setup", :group => :all do |app|
