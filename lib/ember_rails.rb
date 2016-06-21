@@ -18,6 +18,18 @@ module Ember
         ::Rails::Generators.hidden_namespaces.uniq!
       end
 
+      def configure_assets(app)
+        if config.respond_to?(:assets) && config.assets.respond_to?(:configure)
+          # Rails 4.x
+          config.assets.configure do |env|
+            yield env
+          end
+        else
+          # Rails 3.2
+          yield app.assets
+        end
+      end
+
       initializer "ember_rails.setup_vendor", :after => "ember_rails.setup", :group => :all do |app|
         variant = app.config.ember.variant || (::Rails.env.production? ? :production : :development)
 
@@ -27,15 +39,18 @@ module Ember
         ext = variant == :production ? ".prod.js" : ".js"
         FileUtils.mkdir_p(tmp_path)
         FileUtils.cp(::Ember::Source.bundled_path_for("ember#{ext}"), tmp_path.join("ember.js"))
-        app.assets.append_path(tmp_path)
 
-        # Make the handlebars.js and handlebars.runtime.js bundled
-        # in handlebars-source available.
-        app.assets.append_path(File.expand_path('../', ::Handlebars::Source.bundled_path))
+        configure_assets app do |env|
+          env.append_path(tmp_path)
 
-        # Allow a local variant override
-        ember_path = app.root.join("vendor/assets/ember/#{variant}")
-        app.assets.prepend_path(ember_path.to_s) if ember_path.exist?
+          # Make the handlebars.js and handlebars.runtime.js bundled
+          # in handlebars-source available.
+          env.append_path(File.expand_path('../', ::Handlebars::Source.bundled_path))
+
+          # Allow a local variant override
+          ember_path = app.root.join("vendor/assets/ember/#{variant}")
+          env.prepend_path(ember_path.to_s) if ember_path.exist?
+        end
       end
 
       initializer "ember_rails.es5_default", :group => :all do |app|
